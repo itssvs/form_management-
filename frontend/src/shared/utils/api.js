@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api'
 });
 
 // Add token to every request
@@ -18,11 +18,14 @@ api.interceptors.request.use(
   }
 );
 
-// Handle response errors
+// Handle response errors - BUT DON'T AUTO REDIRECT ON 401
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Only auto-redirect if it's NOT a login/register request
+    const isAuthRequest = error.config?.url?.includes('/auth/');
+    
+    if (error.response?.status === 401 && !isAuthRequest) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';

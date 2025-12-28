@@ -1,9 +1,26 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './modules/auth/context/AuthContext';
+import { AuthProvider, useAuth } from './modules/auth/context/AuthContext';
 import ProtectedRoute from './modules/auth/components/ProtectedRoute';
 import Navbar from './shared/components/Navbar';
 import Login from './modules/auth/pages/Login';
 import Register from './modules/auth/pages/Register';
+import UserDashboard from './modules/user/pages/UserDashboard';
+import FormSubmission from './modules/user/pages/FormSubmission';
+import MyForms from './modules/user/pages/MyForms';
+import AdminDashboard from './modules/admin/pages/AdminDashboard';
+
+// Home redirect component
+function HomeRedirect() {
+  const { user, isAdmin, loading } = useAuth();
+  
+  if (loading) return <div>Loading...</div>;
+  
+  if (user) {
+    return <Navigate to={isAdmin ? "/admin/dashboard" : "/user/dashboard"} replace />;
+  }
+  
+  return <Navigate to="/login" replace />;
+}
 
 function App() {
   return (
@@ -12,32 +29,44 @@ function App() {
         <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
           <Navbar />
           <Routes>
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            {/* Home route with smart redirect */}
+            <Route path="/" element={<HomeRedirect />} />
+            
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             
-            {/* User Routes - Will add later */}
+            {/* User Routes */}
             <Route 
               path="/user/dashboard" 
               element={
                 <ProtectedRoute>
-                  <div className="container" style={{ padding: '32px 16px' }}>
-                    <h1 style={{ fontSize: '32px', fontWeight: 'bold' }}>User Dashboard</h1>
-                    <p style={{ marginTop: '16px' }}>Welcome to user dashboard!</p>
-                  </div>
+                  <UserDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/user/submit-form" 
+              element={
+                <ProtectedRoute>
+                  <FormSubmission />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/user/my-forms" 
+              element={
+                <ProtectedRoute>
+                  <MyForms />
                 </ProtectedRoute>
               } 
             />
             
-            {/* Admin Routes - Will add later */}
+            {/* Admin Routes */}
             <Route 
               path="/admin/dashboard" 
               element={
                 <ProtectedRoute adminOnly>
-                  <div className="container" style={{ padding: '32px 16px' }}>
-                    <h1 style={{ fontSize: '32px', fontWeight: 'bold' }}>Admin Dashboard</h1>
-                    <p style={{ marginTop: '16px' }}>Welcome to admin dashboard!</p>
-                  </div>
+                  <AdminDashboard />
                 </ProtectedRoute>
               } 
             />

@@ -4,15 +4,21 @@ require('dotenv').config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// CORS Configuration
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
+
 app.use(express.json());
 
-// Import database connection (will auto-test connection)
+// Import database connection
 require('./config/db');
 
 // Routes
 app.use('/api/auth', require('./modules/auth/routes/authRoutes'));
+app.use('/api/user/forms', require('./modules/user/routes/userFormRoutes'));  // NEW
+app.use('/api/admin', require('./modules/admin/routes/adminFormRoutes'));    // NEW
 
 // Test route
 app.get('/', (req, res) => {

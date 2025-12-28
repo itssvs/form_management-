@@ -10,6 +10,17 @@ const Navbar = () => {
     navigate('/login');
   };
 
+  const handleLogoClick = () => {
+    // Redirect based on user role
+    if (user) {
+      if (isAdmin) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/user/dashboard');
+      }
+    }
+  };
+
   const navStyle = {
     backgroundColor: '#3b82f6',
     color: 'white',
@@ -51,9 +62,18 @@ const Navbar = () => {
       <div style={containerStyle}>
         <div style={flexStyle}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Link to="/" style={{ ...linkStyle, fontSize: '20px', fontWeight: 'bold' }}>
+            {/* Logo - clickable */}
+            <div
+              onClick={handleLogoClick}
+              style={{ 
+                ...linkStyle, 
+                fontSize: '20px', 
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+            >
               Form Management
-            </Link>
+            </div>
             
             {user && (
               <>
