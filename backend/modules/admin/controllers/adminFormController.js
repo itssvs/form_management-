@@ -97,7 +97,7 @@ exports.updateForm = async (req, res) => {
     if (date_of_birth) {
       const dateObj = new Date(date_of_birth);
       // Format as YYYY-MM-DD
-      dateValue = dateObj.toISOString().split('T')[0];
+      dateValue = dateObj.toISOString().split('T')[0]; 
     }
 
     const [result] = await db.query(`
@@ -125,7 +125,7 @@ exports.updateForm = async (req, res) => {
       full_name,
       email,
       phone,
-      dateValue,  // ← Use the formatted date
+      dateValue,  
       address,
       city,
       state,

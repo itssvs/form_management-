@@ -72,7 +72,7 @@ const Navbar = () => {
                 cursor: 'pointer'
               }}
             >
-              Form Management
+              Form Manager
             </div>
             
             {user && (

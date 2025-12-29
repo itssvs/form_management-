@@ -8,7 +8,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { login } = useAuth();
+  const { login } = useAuth(); //get login function from context
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {

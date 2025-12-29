@@ -2,59 +2,56 @@ import { useState, useEffect } from 'react';
 import { getAllForms, deleteForm, updateForm } from '../services/adminFormServices.js';
 
 const AdminDashboard = () => {
-  const [forms, setForms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [selectedForm, setSelectedForm] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editFormData, setEditFormData] = useState(null);
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [state, setState] = useState({
+    forms: [],
+    loading: true,
+    error: '',
+    success: '',
+    selectedForm: null,
+    isEditing: false,
+    editFormData: null,
+    deleteConfirm: null
+  });
 
   useEffect(() => {
     fetchAllForms();
   }, []);
 
   const fetchAllForms = async () => {
-    setLoading(true);
+    setState(prev => ({ ...prev, loading: true }));
     const result = await getAllForms();
     if (result.success) {
-      setForms(result.forms);
+      setState(prev => ({ ...prev, forms: result.forms, loading: false }));
     } else {
-      setError(result.message);
+      setState(prev => ({ ...prev, error: result.message, loading: false }));
     }
-    setLoading(false);
   };
 
   const handleDelete = async (id) => {
     const result = await deleteForm(id);
     if (result.success) {
-      setSuccess('Form deleted successfully');
-      setDeleteConfirm(null);
+      setState(prev => ({ ...prev, success: 'Form deleted successfully', deleteConfirm: null }));
       fetchAllForms();
-      setTimeout(() => setSuccess(''), 3000);
+      setTimeout(() => setState(prev => ({ ...prev, success: '' })), 3000);
     } else {
-      setError(result.message);
+      setState(prev => ({ ...prev, error: result.message }));
     }
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    const result = await updateForm(editFormData.id, editFormData);
+    const result = await updateForm(state.editFormData.id, state.editFormData);
     if (result.success) {
-      setSuccess('Form updated successfully');
-      setIsEditing(false);
-      setSelectedForm(null);
+      setState(prev => ({ ...prev, success: 'Form updated successfully', isEditing: false, selectedForm: null }));
       fetchAllForms();
-      setTimeout(() => setSuccess(''), 3000);
+      setTimeout(() => setState(prev => ({ ...prev, success: '' })), 3000);
     } else {
-      setError(result.message);
+      setState(prev => ({ ...prev, error: result.message }));
     }
   };
 
   const startEdit = (form) => {
-    setEditFormData({ ...form });
-    setIsEditing(true);
+    setState(prev => ({ ...prev, editFormData: { ...form }, isEditing: true }));
   };
 
   const formatDate = (dateString) => {
@@ -94,7 +91,7 @@ const AdminDashboard = () => {
     padding: '24px'
   };
 
-  if (loading) {
+  if (state.loading) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb', padding: '32px 16px' }}>
         <div className="container">
@@ -111,10 +108,10 @@ const AdminDashboard = () => {
           Admin Dashboard - All Forms
         </h1>
 
-        {error && <div className="alert alert-error">{error}</div>}
-        {success && <div className="alert alert-success">{success}</div>}
+        {state.error && <div className="alert alert-error">{state.error}</div>}
+        {state.success && <div className="alert alert-success">{state.success}</div>}
 
-        {forms.length === 0 ? (
+        {state.forms.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px', backgroundColor: 'white', borderRadius: '8px' }}>
             <p style={{ fontSize: '18px', color: '#6b7280' }}>No forms available</p>
           </div>
@@ -132,7 +129,7 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {forms.map((form) => (
+                {state.forms.map((form) => (
                   <tr key={form.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
                     <td style={{ padding: '12px' }}>{form.id}</td>
                     <td style={{ padding: '12px' }}>{form.full_name}</td>
@@ -141,7 +138,7 @@ const AdminDashboard = () => {
                     <td style={{ padding: '12px' }}>{formatDate(form.created_at)}</td>
                     <td style={{ padding: '12px' }}>
                       <button
-                        onClick={() => setSelectedForm(form)}
+                        onClick={() => setState(prev => ({ ...prev, selectedForm: form }))}
                         style={{
                           backgroundColor: '#3b82f6',
                           color: 'white',
@@ -171,7 +168,7 @@ const AdminDashboard = () => {
                         Edit
                       </button>
                       <button
-                        onClick={() => setDeleteConfirm(form)}
+                        onClick={() => setState(prev => ({ ...prev, deleteConfirm: form }))}
                         style={{
                           backgroundColor: '#ef4444',
                           color: 'white',
@@ -193,13 +190,13 @@ const AdminDashboard = () => {
         )}
 
         {/* View Form Modal */}
-        {selectedForm && !isEditing && (
-          <div style={modalStyle} onClick={() => setSelectedForm(null)}>
-            <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
+        {state.selectedForm && !state.isEditing && (
+            <div style={modalStyle} onClick={() => setState(prev => ({ ...prev, selectedForm: null }))}>
+              <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>Form Details</h2>
                 <button
-                  onClick={() => setSelectedForm(null)}
+                  onClick={() => setState(prev => ({ ...prev, selectedForm: null }))}
                   style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#6b7280' }}
                 >
                   ×
@@ -207,8 +204,8 @@ const AdminDashboard = () => {
               </div>
 
               <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#f3f4f6', borderRadius: '6px' }}>
-                <p><strong>Submitted by:</strong> {selectedForm.user_name} ({selectedForm.user_email})</p>
-                <p><strong>Submitted on:</strong> {formatDate(selectedForm.created_at)}</p>
+                <p><strong>Submitted by:</strong> {state.selectedForm.user_name} ({state.selectedForm.user_email})</p>
+                <p><strong>Submitted on:</strong> {formatDate(state.selectedForm.created_at)}</p>
               </div>
 
               {/* Personal Details */}
@@ -219,31 +216,31 @@ const AdminDashboard = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>Full Name</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.full_name}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.full_name}</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>Email</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.email}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.email}</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>Phone</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.phone || 'N/A'}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.phone || 'N/A'}</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>Date of Birth</label>
-                    <p style={{ fontWeight: '500' }}>{formatDate(selectedForm.date_of_birth)}</p>
+                    <p style={{ fontWeight: '500' }}>{formatDate(state.selectedForm.date_of_birth)}</p>
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>Address</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.address || 'N/A'}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.address || 'N/A'}</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>City</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.city || 'N/A'}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.city || 'N/A'}</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>State</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.state || 'N/A'}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.state || 'N/A'}</p>
                   </div>
                 </div>
               </div>
@@ -256,23 +253,23 @@ const AdminDashboard = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>High School</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.high_school || 'N/A'}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.high_school || 'N/A'}</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>Degree</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.degree || 'N/A'}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.degree || 'N/A'}</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>University</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.university || 'N/A'}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.university || 'N/A'}</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>Graduation Year</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.graduation_year || 'N/A'}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.graduation_year || 'N/A'}</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>CGPA</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.cgpa || 'N/A'}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.cgpa || 'N/A'}</p>
                   </div>
                 </div>
               </div>
@@ -285,25 +282,25 @@ const AdminDashboard = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>Current Company</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.current_company || 'N/A'}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.current_company || 'N/A'}</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>Position</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.position || 'N/A'}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.position || 'N/A'}</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>Experience (Years)</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.experience_years || 'N/A'}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.experience_years || 'N/A'}</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>Salary</label>
-                    <p style={{ fontWeight: '500' }}>{selectedForm.salary ? `$${selectedForm.salary}` : 'N/A'}</p>
+                    <p style={{ fontWeight: '500' }}>{state.selectedForm.salary ? `$${state.selectedForm.salary}` : 'N/A'}</p>
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
                     <label style={{ fontSize: '12px', color: '#6b7280' }}>Skills</label>
                     <p style={{ fontWeight: '500' }}>
-                      {selectedForm.skills && selectedForm.skills.length > 0 
-                        ? selectedForm.skills.join(', ') 
+                      {state.selectedForm.skills && state.selectedForm.skills.length > 0 
+                        ? state.selectedForm.skills.join(', ') 
                         : 'N/A'}
                     </p>
                   </div>
@@ -314,13 +311,13 @@ const AdminDashboard = () => {
         )}
 
         {/* Edit Form Modal */}
-        {isEditing && editFormData && (
-          <div style={modalStyle} onClick={() => setIsEditing(false)}>
-            <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
+        {state.isEditing && state.editFormData && (
+            <div style={modalStyle} onClick={() => setState(prev => ({ ...prev, isEditing: false }))}>
+              <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>Edit Form</h2>
                 <button
-                  onClick={() => setIsEditing(false)}
+                  onClick={() => setState(prev => ({ ...prev, isEditing: false }))}
                   style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#6b7280' }}
                 >
                   ×
@@ -338,8 +335,8 @@ const AdminDashboard = () => {
                       <label className="label">Full Name</label>
                       <input
                         type="text"
-                        value={editFormData.full_name || ''}
-                        onChange={(e) => setEditFormData({...editFormData, full_name: e.target.value})}
+                        value={state.editFormData.full_name || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, full_name: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -347,8 +344,8 @@ const AdminDashboard = () => {
                       <label className="label">Email</label>
                       <input
                         type="email"
-                        value={editFormData.email || ''}
-                        onChange={(e) => setEditFormData({...editFormData, email: e.target.value})}
+                        value={state.editFormData.email || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, email: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -356,8 +353,8 @@ const AdminDashboard = () => {
                       <label className="label">Phone</label>
                       <input
                         type="tel"
-                        value={editFormData.phone || ''}
-                        onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})}
+                        value={state.editFormData.phone || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, phone: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -365,16 +362,16 @@ const AdminDashboard = () => {
                       <label className="label">Date of Birth</label>
                       <input
                         type="date"
-                        value={editFormData.date_of_birth ? editFormData.date_of_birth.split('T')[0] : ''}
-                        onChange={(e) => setEditFormData({...editFormData, date_of_birth: e.target.value})}
+                        value={state.editFormData.date_of_birth ? state.editFormData.date_of_birth.split('T')[0] : ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, date_of_birth: e.target.value} }))}
                         className="input"
                       />
                     </div>
                     <div style={{ gridColumn: 'span 2' }}>
                       <label className="label">Address</label>
                       <textarea
-                        value={editFormData.address || ''}
-                        onChange={(e) => setEditFormData({...editFormData, address: e.target.value})}
+                        value={state.editFormData.address || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, address: e.target.value} }))}
                         className="input"
                         rows="3"
                       />
@@ -383,8 +380,8 @@ const AdminDashboard = () => {
                       <label className="label">City</label>
                       <input
                         type="text"
-                        value={editFormData.city || ''}
-                        onChange={(e) => setEditFormData({...editFormData, city: e.target.value})}
+                        value={state.editFormData.city || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, city: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -392,8 +389,8 @@ const AdminDashboard = () => {
                       <label className="label">State</label>
                       <input
                         type="text"
-                        value={editFormData.state || ''}
-                        onChange={(e) => setEditFormData({...editFormData, state: e.target.value})}
+                        value={state.editFormData.state || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, state: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -401,8 +398,8 @@ const AdminDashboard = () => {
                       <label className="label">Zip Code</label>
                       <input
                         type="text"
-                        value={editFormData.zip_code || ''}
-                        onChange={(e) => setEditFormData({...editFormData, zip_code: e.target.value})}
+                        value={state.editFormData.zip_code || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, zip_code: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -419,8 +416,8 @@ const AdminDashboard = () => {
                       <label className="label">High School</label>
                       <input
                         type="text"
-                        value={editFormData.high_school || ''}
-                        onChange={(e) => setEditFormData({...editFormData, high_school: e.target.value})}
+                        value={state.editFormData.high_school || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, high_school: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -428,8 +425,8 @@ const AdminDashboard = () => {
                       <label className="label">Degree</label>
                       <input
                         type="text"
-                        value={editFormData.degree || ''}
-                        onChange={(e) => setEditFormData({...editFormData, degree: e.target.value})}
+                        value={state.editFormData.degree || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, degree: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -437,8 +434,8 @@ const AdminDashboard = () => {
                       <label className="label">University</label>
                       <input
                         type="text"
-                        value={editFormData.university || ''}
-                        onChange={(e) => setEditFormData({...editFormData, university: e.target.value})}
+                        value={state.editFormData.university || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, university: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -446,8 +443,8 @@ const AdminDashboard = () => {
                       <label className="label">Graduation Year</label>
                       <input
                         type="number"
-                        value={editFormData.graduation_year || ''}
-                        onChange={(e) => setEditFormData({...editFormData, graduation_year: e.target.value})}
+                        value={state.editFormData.graduation_year || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, graduation_year: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -456,8 +453,8 @@ const AdminDashboard = () => {
                       <input
                         type="number"
                         step="0.01"
-                        value={editFormData.cgpa || ''}
-                        onChange={(e) => setEditFormData({...editFormData, cgpa: e.target.value})}
+                        value={state.editFormData.cgpa || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, cgpa: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -474,8 +471,8 @@ const AdminDashboard = () => {
                       <label className="label">Current Company</label>
                       <input
                         type="text"
-                        value={editFormData.current_company || ''}
-                        onChange={(e) => setEditFormData({...editFormData, current_company: e.target.value})}
+                        value={state.editFormData.current_company || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, current_company: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -483,8 +480,8 @@ const AdminDashboard = () => {
                       <label className="label">Position</label>
                       <input
                         type="text"
-                        value={editFormData.position || ''}
-                        onChange={(e) => setEditFormData({...editFormData, position: e.target.value})}
+                        value={state.editFormData.position || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, position: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -492,8 +489,8 @@ const AdminDashboard = () => {
                       <label className="label">Experience (Years)</label>
                       <input
                         type="number"
-                        value={editFormData.experience_years || ''}
-                        onChange={(e) => setEditFormData({...editFormData, experience_years: e.target.value})}
+                        value={state.editFormData.experience_years || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, experience_years: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -501,8 +498,8 @@ const AdminDashboard = () => {
                       <label className="label">Salary</label>
                       <input
                         type="number"
-                        value={editFormData.salary || ''}
-                        onChange={(e) => setEditFormData({...editFormData, salary: e.target.value})}
+                        value={state.editFormData.salary || ''}
+                        onChange={(e) => setState(prev => ({ ...prev, editFormData: {...prev.editFormData, salary: e.target.value} }))}
                         className="input"
                       />
                     </div>
@@ -510,11 +507,14 @@ const AdminDashboard = () => {
                       <label className="label">Skills (comma-separated)</label>
                       <input
                         type="text"
-                        value={Array.isArray(editFormData.skills) ? editFormData.skills.join(', ') : editFormData.skills || ''}
-                        onChange={(e) => setEditFormData({
-                          ...editFormData, 
-                          skills: e.target.value.split(',').map(s => s.trim()).filter(s => s)
-                        })}
+                        value={Array.isArray(state.editFormData.skills) ? state.editFormData.skills.join(', ') : state.editFormData.skills || ''}
+                        onChange={(e) => setState(prev => ({
+                          ...prev, 
+                          editFormData: {
+                            ...prev.editFormData,
+                            skills: e.target.value.split(',').map(s => s.trim()).filter(s => s)
+                          }
+                        }))}
                         className="input"
                         placeholder="JavaScript, React, Node.js"
                       />
@@ -526,7 +526,7 @@ const AdminDashboard = () => {
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid #e5e7eb', paddingTop: '16px' }}>
                   <button
                     type="button"
-                    onClick={() => setIsEditing(false)}
+                    onClick={() => setState(prev => ({ ...prev, isEditing: false }))}
                     className="btn"
                     style={{ backgroundColor: '#6b7280', color: 'white' }}
                   >
@@ -545,8 +545,8 @@ const AdminDashboard = () => {
         )}
 
         {/* Delete Confirmation Modal */}
-        {deleteConfirm && (
-          <div style={modalStyle} onClick={() => setDeleteConfirm(null)}>
+        {state.deleteConfirm && (
+          <div style={modalStyle} onClick={() => setState(prev => ({ ...prev, deleteConfirm: null }))}>
             <div 
               style={{ ...modalContentStyle, maxWidth: '400px' }} 
               onClick={(e) => e.stopPropagation()}
@@ -555,19 +555,19 @@ const AdminDashboard = () => {
                 Confirm Delete
               </h2>
               <p style={{ marginBottom: '24px', color: '#6b7280' }}>
-                Are you sure you want to delete the form for <strong>{deleteConfirm.full_name}</strong>? 
+                Are you sure you want to delete the form for <strong>{state.deleteConfirm.full_name}</strong>? 
                 This action cannot be undone.
               </p>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                 <button
-                  onClick={() => setDeleteConfirm(null)}
+                  onClick={() => setState(prev => ({ ...prev, deleteConfirm: null }))}
                   className="btn"
                   style={{ backgroundColor: '#6b7280', color: 'white' }}
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={() => handleDelete(deleteConfirm.id)}
+                  onClick={() => handleDelete(state.deleteConfirm.id)}
                   className="btn btn-danger"
                 >
                   Delete

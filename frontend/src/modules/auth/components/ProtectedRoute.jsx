@@ -1,10 +1,10 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute = ({ children, adminOnly = false }) => {
-  const { user, loading } = useAuth();
+const ProtectedRoute = ({ children, adminOnly = false }) => { // Determine if route is admin only
+  const { user, loading } = useAuth(); 
 
-  if (loading) {
+  if (loading) { // Show loading indicator while checking auth status
     return (
       <div style={{ 
         display: 'flex', 

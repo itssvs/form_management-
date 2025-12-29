@@ -14,7 +14,7 @@ const Register = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); 
     setError('');
 
     if (password !== confirmPassword) {
@@ -27,8 +27,8 @@ const Register = () => {
       return;
     }
 
-    setLoading(true);
-    const result = await register(name, email, password);
+    setLoading(true); 
+    const result = await register(name, email, password); //call register function from context
     
     if (result.success) {
       navigate('/user/dashboard');

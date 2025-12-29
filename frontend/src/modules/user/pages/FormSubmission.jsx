@@ -4,33 +4,44 @@ import { createForm } from '../services/userFormServices.js';
 
 const FormSubmission = () => {
   const navigate = useNavigate();
+  
+  // Single useState for all form data
+  const [formData, setFormData] = useState({
+    // Personal Details
+    fullName: '',
+    email: '',
+    phone: '',
+    dob: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    // Education Details
+    highSchool: '',
+    degree: '',
+    university: '',
+    graduationYear: '',
+    cgpa: '',
+    // Work Details
+    currentCompany: '',
+    position: '',
+    experienceYears: '',
+    salary: '',
+    skills: ''
+  });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Personal Details
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [dob, setDob] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [zipCode, setZipCode] = useState('');
-
-  // Education Details
-  const [highSchool, setHighSchool] = useState('');
-  const [degree, setDegree] = useState('');
-  const [university, setUniversity] = useState('');
-  const [graduationYear, setGraduationYear] = useState('');
-  const [cgpa, setCgpa] = useState('');
-
-  // Work Details
-  const [currentCompany, setCurrentCompany] = useState('');
-  const [position, setPosition] = useState('');
-  const [experienceYears, setExperienceYears] = useState('');
-  const [salary, setSalary] = useState('');
-  const [skills, setSkills] = useState('');
+  // Generic handler for all input changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,28 +49,28 @@ const FormSubmission = () => {
     setSuccess('');
     setLoading(true);
 
-    const formData = {
-      full_name: fullName,
-      email,
-      phone,
-      date_of_birth: dob,
-      address,
-      city,
-      state,
-      zip_code: zipCode,
-      high_school: highSchool,
-      degree,
-      university,
-      graduation_year: graduationYear ? parseInt(graduationYear) : null,
-      cgpa: cgpa ? parseFloat(cgpa) : null,
-      current_company: currentCompany,
-      position,
-      experience_years: experienceYears ? parseInt(experienceYears) : null,
-      salary: salary ? parseFloat(salary) : null,
-      skills: skills.split(',').map(s => s.trim()).filter(s => s)
+    const submissionData = {
+      full_name: formData.fullName,
+      email: formData.email,
+      phone: formData.phone,
+      date_of_birth: formData.dob,
+      address: formData.address,
+      city: formData.city,
+      state: formData.state,
+      zip_code: formData.zipCode,
+      high_school: formData.highSchool,
+      degree: formData.degree,
+      university: formData.university,
+      graduation_year: formData.graduationYear ? parseInt(formData.graduationYear) : null,
+      cgpa: formData.cgpa ? parseFloat(formData.cgpa) : null,
+      current_company: formData.currentCompany,
+      position: formData.position,
+      experience_years: formData.experienceYears ? parseInt(formData.experienceYears) : null,
+      salary: formData.salary ? parseFloat(formData.salary) : null,
+      skills: formData.skills.split(',').map(s => s.trim()).filter(s => s)
     };
 
-    const result = await createForm(formData);
+    const result = await createForm(submissionData);
 
     if (result.success) {
       setSuccess('Form submitted successfully!');
@@ -74,20 +85,22 @@ const FormSubmission = () => {
   };
 
   const sectionStyle = {
-    backgroundColor: 'white',
-    padding: '24px',
-    borderRadius: '8px',
-    marginBottom: '24px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    background: 'linear-gradient(135deg, #fff 0%, #fce4ec 50%, #fff 100%)',
+    padding: '32px',
+    borderRadius: '20px',
+    marginBottom: '28px',
+    boxShadow: '0 10px 25px rgba(233, 30, 99, 0.15)',
+    border: '2px solid #f8bbd0',
+    transition: 'all 0.3s ease'
   };
 
   const headingStyle = {
-    fontSize: '20px',
+    fontSize: '22px',
     fontWeight: 'bold',
-    marginBottom: '16px',
-    color: '#1f2937',
-    borderBottom: '2px solid #3b82f6',
-    paddingBottom: '8px'
+    marginBottom: '20px',
+    color: '#c2185b',
+    borderBottom: '3px solid #e91e63',
+    paddingBottom: '12px'
   };
 
   const gridStyle = {
@@ -98,10 +111,15 @@ const FormSubmission = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb', padding: '32px 16px' }}>
+    <div style={{ minHeight: '100vh', padding: '40px 16px' }} className="animate-fade-in">
       <div className="container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '24px' }}>
-          Submit Personal Details Form
+        <h1 className="gradient-text" style={{ 
+          fontSize: '36px', 
+          fontWeight: 'bold', 
+          marginBottom: '32px',
+          textAlign: 'center'
+        }}>
+          ✨ Submit Personal Details Form
         </h1>
 
         {error && <div className="alert alert-error">{error}</div>}
@@ -109,15 +127,19 @@ const FormSubmission = () => {
 
         <form onSubmit={handleSubmit}>
           {/* Personal Details Section */}
-          <div style={sectionStyle}>
-            <h2 style={headingStyle}>Personal Details</h2>
+          <div style={sectionStyle} className="form-section">
+            <h2 style={headingStyle}>
+              <span style={{ fontSize: '28px' }} className="animate-pulse">👤</span>
+              Personal Details
+            </h2>
             <div style={gridStyle}>
               <div>
                 <label className="label">Full Name *</label>
                 <input
                   type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
                   className="input"
                   required
                 />
@@ -126,8 +148,9 @@ const FormSubmission = () => {
                 <label className="label">Email *</label>
                 <input
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   className="input"
                   required
                 />
@@ -136,8 +159,9 @@ const FormSubmission = () => {
                 <label className="label">Phone</label>
                 <input
                   type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
                   className="input"
                 />
               </div>
@@ -145,8 +169,9 @@ const FormSubmission = () => {
                 <label className="label">Date of Birth</label>
                 <input
                   type="date"
-                  value={dob}
-                  onChange={(e) => setDob(e.target.value)}
+                  name="dob"
+                  value={formData.dob}
+                  onChange={handleChange}
                   className="input"
                 />
               </div>
@@ -154,8 +179,9 @@ const FormSubmission = () => {
             <div style={{ marginBottom: '16px' }}>
               <label className="label">Address</label>
               <textarea
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
                 className="input"
                 rows="3"
               />
@@ -165,8 +191,9 @@ const FormSubmission = () => {
                 <label className="label">City</label>
                 <input
                   type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
                   className="input"
                 />
               </div>
@@ -174,8 +201,9 @@ const FormSubmission = () => {
                 <label className="label">State</label>
                 <input
                   type="text"
-                  value={state}
-                  onChange={(e) => setState(e.target.value)}
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
                   className="input"
                 />
               </div>
@@ -183,8 +211,9 @@ const FormSubmission = () => {
                 <label className="label">Zip Code</label>
                 <input
                   type="text"
-                  value={zipCode}
-                  onChange={(e) => setZipCode(e.target.value)}
+                  name="zipCode"
+                  value={formData.zipCode}
+                  onChange={handleChange}
                   className="input"
                 />
               </div>
@@ -192,15 +221,19 @@ const FormSubmission = () => {
           </div>
 
           {/* Education Details Section */}
-          <div style={sectionStyle}>
-            <h2 style={headingStyle}>Education Details</h2>
+          <div style={sectionStyle} className="form-section">
+            <h2 style={headingStyle}>
+              <span style={{ fontSize: '28px' }} className="animate-pulse">🎓</span>
+              Education Details
+            </h2>
             <div style={gridStyle}>
               <div>
                 <label className="label">High School</label>
                 <input
                   type="text"
-                  value={highSchool}
-                  onChange={(e) => setHighSchool(e.target.value)}
+                  name="highSchool"
+                  value={formData.highSchool}
+                  onChange={handleChange}
                   className="input"
                 />
               </div>
@@ -208,8 +241,9 @@ const FormSubmission = () => {
                 <label className="label">Degree</label>
                 <input
                   type="text"
-                  value={degree}
-                  onChange={(e) => setDegree(e.target.value)}
+                  name="degree"
+                  value={formData.degree}
+                  onChange={handleChange}
                   className="input"
                 />
               </div>
@@ -217,8 +251,9 @@ const FormSubmission = () => {
                 <label className="label">University</label>
                 <input
                   type="text"
-                  value={university}
-                  onChange={(e) => setUniversity(e.target.value)}
+                  name="university"
+                  value={formData.university}
+                  onChange={handleChange}
                   className="input"
                 />
               </div>
@@ -226,8 +261,9 @@ const FormSubmission = () => {
                 <label className="label">Graduation Year</label>
                 <input
                   type="number"
-                  value={graduationYear}
-                  onChange={(e) => setGraduationYear(e.target.value)}
+                  name="graduationYear"
+                  value={formData.graduationYear}
+                  onChange={handleChange}
                   className="input"
                   min="1950"
                   max="2030"
@@ -237,8 +273,9 @@ const FormSubmission = () => {
                 <label className="label">CGPA</label>
                 <input
                   type="number"
-                  value={cgpa}
-                  onChange={(e) => setCgpa(e.target.value)}
+                  name="cgpa"
+                  value={formData.cgpa}
+                  onChange={handleChange}
                   className="input"
                   step="0.01"
                   min="0"
@@ -249,15 +286,19 @@ const FormSubmission = () => {
           </div>
 
           {/* Work Details Section */}
-          <div style={sectionStyle}>
-            <h2 style={headingStyle}>Work Details</h2>
+          <div style={sectionStyle} className="form-section">
+            <h2 style={headingStyle}>
+              <span style={{ fontSize: '28px' }} className="animate-pulse">💼</span>
+              Work Details
+            </h2>
             <div style={gridStyle}>
               <div>
                 <label className="label">Current Company</label>
                 <input
                   type="text"
-                  value={currentCompany}
-                  onChange={(e) => setCurrentCompany(e.target.value)}
+                  name="currentCompany"
+                  value={formData.currentCompany}
+                  onChange={handleChange}
                   className="input"
                 />
               </div>
@@ -265,8 +306,9 @@ const FormSubmission = () => {
                 <label className="label">Position</label>
                 <input
                   type="text"
-                  value={position}
-                  onChange={(e) => setPosition(e.target.value)}
+                  name="position"
+                  value={formData.position}
+                  onChange={handleChange}
                   className="input"
                 />
               </div>
@@ -274,8 +316,9 @@ const FormSubmission = () => {
                 <label className="label">Experience (Years)</label>
                 <input
                   type="number"
-                  value={experienceYears}
-                  onChange={(e) => setExperienceYears(e.target.value)}
+                  name="experienceYears"
+                  value={formData.experienceYears}
+                  onChange={handleChange}
                   className="input"
                   min="0"
                 />
@@ -284,8 +327,9 @@ const FormSubmission = () => {
                 <label className="label">Salary</label>
                 <input
                   type="number"
-                  value={salary}
-                  onChange={(e) => setSalary(e.target.value)}
+                  name="salary"
+                  value={formData.salary}
+                  onChange={handleChange}
                   className="input"
                   min="0"
                 />
@@ -295,8 +339,9 @@ const FormSubmission = () => {
               <label className="label">Skills (comma-separated)</label>
               <input
                 type="text"
-                value={skills}
-                onChange={(e) => setSkills(e.target.value)}
+                name="skills"
+                value={formData.skills}
+                onChange={handleChange}
                 className="input"
                 placeholder="e.g., JavaScript, React, Node.js"
               />
@@ -318,7 +363,7 @@ const FormSubmission = () => {
               disabled={loading}
               className="btn btn-primary"
             >
-              {loading ? 'Submitting...' : 'Submit Form'}
+              {loading ? '🔄 Submitting...' : '🚀 Submit Form'}
             </button>
           </div>
         </form>

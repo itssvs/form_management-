@@ -3,35 +3,35 @@ import api from '../../../shared/utils/api';
 
 const AuthContext = createContext();
 
-export const useAuth = () => {
+export const useAuth = () => { // Custom hook to use the AuthContext
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error('useAuth must be used within AuthProvider'); // Ensure the hook is used within the provider
   }
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+export const AuthProvider = ({ children }) => { 
+  const [user, setUser] = useState(null); 
+  const [loading, setLoading] = useState(true); 
 
-  useEffect(() => {
+  useEffect(() => { // On refreshing check for existing token and user info
     const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
     
     if (token && savedUser) {
       setUser(JSON.parse(savedUser));
     }
-    setLoading(false);
+    setLoading(false); 
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password) => { 
     try {
-      const response = await api.post('/auth/login', { email, password });
-      const { token, user } = response.data;
+      const response = await api.post('/auth/login', { email, password }); //call login api 
+      const { token, user } = response.data; 
       
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', token);  
+      localStorage.setItem('user', JSON.stringify(user)); 
       setUser(user);
       
       return { success: true };
@@ -45,8 +45,8 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
-      const response = await api.post('/auth/register', { name, email, password });
-      const { token, user } = response.data;
+      const response = await api.post('/auth/register', { name, email, password }); 
+      const { token, user } = response.data; 
       
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));

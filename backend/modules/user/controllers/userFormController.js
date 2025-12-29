@@ -3,7 +3,7 @@ const db = require('../../../config/db');
 // Create new form (User only)
 exports.createForm = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id; // Get user ID from authenticated user
     const {
       // Personal Details
       full_name, email, phone, date_of_birth, address, city, state, zip_code,
